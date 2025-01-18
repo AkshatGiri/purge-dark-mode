@@ -96,6 +96,10 @@ func RemoveDarkClasses(str string) (string, []string) {
 	result := []byte{}
 	found := []string{}
 
+	if(len(str) < 5) { 
+		return str, found
+	}
+
 	for i := 0; i < len(str); i++ {
 		start := str[i]
 		if start != 'd' {
