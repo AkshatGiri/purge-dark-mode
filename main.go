@@ -59,10 +59,10 @@ func processFile(path string, dryRun bool) error {
 	return nil
 }
 
-func RemoveDarkClass(str string) (string) {
+func RemoveDarkClass(str string) string {
 	result := []byte{}
 
-	for i := 0; i < len(str); i++ { 
+	for i := 0; i < len(str); i++ {
 		start := str[i]
 		if start != 'd' {
 			result = append(result, start)
@@ -71,12 +71,12 @@ func RemoveDarkClass(str string) (string) {
 
 		isDark := str[i:i+5] == "dark:"
 
-		if !isDark { 
+		if !isDark {
 			result = append(result, start)
 			continue
 		}
 
-		for j := i+5; j < len(str); j++ {
+		for j := i + 5; j < len(str); j++ {
 			current := str[j]
 			// if we find a space, we'll include that in the skip
 			if current == ' ' || current == '\n' || current == '\t' || current == '\r' {
@@ -100,6 +100,6 @@ func RemoveDarkClass(str string) (string) {
 			}
 		}
 	}
-	
+
 	return string(result)
 }
