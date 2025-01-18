@@ -1,0 +1,5 @@
+This file should also be ignored since the directory is ignored. The dark classes in this file should remain intact.
+
+dark:bg-gray-800 dark:text-white
+
+bg-red-500 text-white

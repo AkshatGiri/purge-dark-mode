@@ -1,0 +1,5 @@
+This file should be ignored and the following dark class should remain intact.
+
+dark:bg-gray-800 dark:text-white
+
+bg-red-500 text-white

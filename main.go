@@ -9,18 +9,55 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	ignore "github.com/sabhiram/go-gitignore"
 )
 
 func main() {
+
 	// Parse command line flags
 	dir := flag.String("dir", ".", "Directory to process")
 	dryRun := flag.Bool("dry-run", false, "Show what would be changed without making changes")
+	logLevelFlag := flag.String("log-level", "info", "Log level (debug, info, warn, error)")
+
 	flag.Parse()
+
+	var logLevel zerolog.Level
+
+	switch *logLevelFlag {
+	case "debug":
+		logLevel = zerolog.DebugLevel
+	case "info":
+		logLevel = zerolog.InfoLevel
+	case "warn":
+		logLevel = zerolog.WarnLevel
+	case "error":
+		logLevel = zerolog.ErrorLevel
+	default:
+		log.Error().Msg("Invalid log level")
+		os.Exit(1)
+	}
+
 
 	// Setup logging
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	zerolog.SetGlobalLevel(logLevel)
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
+	// Check if .gitignore file exists in the directory
+	gitignorePath := filepath.Join(*dir, ".gitignore")
+
+	var ignoreParser *ignore.GitIgnore
+
+	if _, err := os.Stat(gitignorePath); os.IsNotExist(err) {
+		log.Warn().Msg("No .gitignore file found in the directory. It's recommended to have a .gitignore file to exclude node_modules and other directories from being processed.")
+		ignoreParser = ignore.CompileIgnoreLines()
+	} else { 
+		ignoreParser, err = ignore.CompileIgnoreFile(gitignorePath)
+		if err != nil {
+			log.Error().Err(err).Msg("Error compiling .gitignore file")
+			os.Exit(1)
+		}
+	}
 
 	processedFilesCount := 0
 
@@ -30,12 +67,40 @@ func main() {
 			return err
 		}
 
-		// TODO: check if we need to process the file.
-		if info.IsDir() {
+		// explicitly skipping .gitignore file
+		if !info.IsDir() && info.Name() == ".gitignore" {
+			log.Debug().Str("path", path).Msg("Ignoring file")
 			return nil
 		}
 
-		// process the file.
+		// explicitly skipping .git folder
+		if info.IsDir() && info.Name() == ".git" { 
+			log.Debug().Str("path", path).Msg("Ignoring directory")
+			return filepath.SkipDir
+		}
+
+		// skipping directories that are gitignored
+		if info.IsDir() && ignoreParser.MatchesPath(path) { 
+			log.Debug().Str("path", path).Msg("Ignoring directory")
+			return filepath.SkipDir
+		}
+
+		// skipping files that are gitignored
+		if(ignoreParser.MatchesPath(path)) {
+			log.Debug().Str("path", path).Msg("Ignoring file")
+			return nil
+		}
+
+		// not processing the folder itself
+		if info.IsDir() {
+			// just a sanity warning to warn user about non gitignored directories
+			if info.Name() == "node_modules" { 
+				log.Warn().Msg("Found node_modules while walking directory. Please make sure it's part of the .gitignore. Processing files in node_modules can cause issues. If there other directories you'd like to ignore, please add them to the .gitignore file.")
+			}
+			return nil
+		}
+
+		// process all other type of files
 		err = processFile(path, *dryRun)
 		processedFilesCount += 1
 		return err
@@ -44,6 +109,10 @@ func main() {
 	if err != nil {
 		log.Error().Err(err).Msg("Error walking directory: " + *dir)
 		os.Exit(1)
+	}
+
+	if *dryRun {
+		log.Info().Msg("Dry run - no changes made")
 	}
 
 	log.Info().Int("files_processed", processedFilesCount).Msg("Processing complete")
@@ -75,7 +144,6 @@ func processFile(path string, dryRun bool) error {
 	log.Debug().Strs("found", found).Int("count", len(found)).Msg("Found dark classes")
 
 	if dryRun {
-		log.Info().Msg("Dry run - no changes made")
 		return nil
 	}
 
