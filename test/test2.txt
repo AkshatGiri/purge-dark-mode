@@ -1,0 +1,4 @@
+class="normal-class dark:bg-gray-800 other-class"    <!-- Single space before/after -->
+class="normal-class  dark:bg-gray-800  other-class"  <!-- Multiple spaces before/after -->
+class="normal-class dark:bg-gray-800"                <!-- Space before, nothing after -->
+class="dark:bg-gray-800 other-class"                 <!-- Nothing before, space after -->
