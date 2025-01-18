@@ -35,5 +35,5 @@ By default the gitignored files are ignored by reading the top level `.gitignore
 
 ## TODO
 
-- Support multiple `.gitignore` files in children directory.
+- Support multiple `.gitignore` files in children directories.
 - Ignore .css files. It's possible to have `dark:` string in css files, we should probably not touch those. So having a way in the cli to provide certain file extensions to ignore would be nice. As a workaround for now, before running the script those file extensions can be added to the .gitignore file and removed after running the script.
