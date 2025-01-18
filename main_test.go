@@ -26,7 +26,8 @@ func TestDarkClassRemoval(t *testing.T) {
 	}
 
 	for i, input := range inputs {
-		output := RemoveDarkClass(input)
+		output, _ := RemoveDarkClasses(input)
+
 		if output != expected[i] {
 			t.Errorf("Expected %s, got %s", expected[i], output)
 		}
