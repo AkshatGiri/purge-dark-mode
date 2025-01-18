@@ -15,3 +15,10 @@ So this script is to remove all those pesky little `dark:` theme tailwind classe
 1. Clone the repo
 2. Run `go build -o purge-dark-mode main.go`
 3. Run `./purge-dark-mode -dir=/path/to/your/directory` ( The defaul is set to the currnet working directory, so be careful running it in this directory since there is a `dark:` in the go code that will be removed. )
+
+> [!TIP]
+> You should git commit your changes before running the script. This way you can easily review the chagnes and revert them if something goes wrong.
+
+## TODO
+
+- We need a way to discard certain files and folders. The easiest way would be to use the existing `.gitignore` file to ignore certain files and folders.
